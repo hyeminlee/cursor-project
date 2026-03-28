@@ -26,6 +26,9 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    scroll-padding-bottom: calc(
+      1rem + var(--keyboard-inset, 0px) + env(safe-area-inset-bottom, 0px)
+    );
   }
 
   body {

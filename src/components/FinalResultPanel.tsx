@@ -2,18 +2,25 @@ import { motion } from "framer-motion"
 
 type FinalResultPanelProps = {
   message: string
-  onRestart: () => void
+  onRestartFromScratch: () => void
+  onRestartWithSameQuestion: () => void
+  /** 질문이 비어 있으면 첫 버튼만 비활성화 (두 선택지는 항상 표시). */
+  canReplayWithSameQuestion: boolean
   /** `inline`: stacked export for HTML → Framer; `modal`: full-screen overlay (default). */
   layout?: "modal" | "inline"
 }
 
 function ResultCardBody({
   message,
-  onRestart,
+  onRestartFromScratch,
+  onRestartWithSameQuestion,
+  canReplayWithSameQuestion,
   headingId,
 }: {
   message: string
-  onRestart: () => void
+  onRestartFromScratch: () => void
+  onRestartWithSameQuestion: () => void
+  canReplayWithSameQuestion: boolean
   headingId: string
 }) {
   return (
@@ -32,20 +39,54 @@ function ResultCardBody({
         {message}
       </h2>
 
-      <motion.button
-        type="button"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full rounded-2xl bg-gradient-to-r from-dream-500 to-indigo-500 px-6 py-3.5 text-base font-semibold text-white shadow-soft transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dream-500"
-        onClick={onRestart}
-      >
-        다시 시작하기
-      </motion.button>
+      <div className="flex flex-col gap-3">
+        <motion.button
+          type="button"
+          disabled={!canReplayWithSameQuestion}
+          title={
+            canReplayWithSameQuestion
+              ? undefined
+              : "질문을 적었을 때만 같은 질문으로 다시 할 수 있어요"
+          }
+          whileHover={canReplayWithSameQuestion ? { scale: 1.02 } : undefined}
+          whileTap={canReplayWithSameQuestion ? { scale: 0.98 } : undefined}
+          className={
+            canReplayWithSameQuestion
+              ? "w-full rounded-2xl bg-gradient-to-r from-dream-500 to-indigo-500 px-6 py-3.5 text-base font-semibold text-white shadow-soft transition enabled:hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dream-500"
+              : "w-full cursor-not-allowed rounded-2xl border border-dream-200/80 bg-dream-100/80 px-6 py-3.5 text-base font-semibold text-dream-400 shadow-sm"
+          }
+          onClick={() => {
+            if (canReplayWithSameQuestion) onRestartWithSameQuestion()
+          }}
+        >
+          같은 질문으로 다시
+        </motion.button>
+        {!canReplayWithSameQuestion ? (
+          <p className="text-center text-xs text-dream-500">
+            질문을 비워 두셨다면 아래에서 처음부터 다시 시작해 주세요
+          </p>
+        ) : null}
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full rounded-2xl border-2 border-dream-200/90 bg-white/80 px-6 py-3.5 text-base font-semibold text-dream-800 shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dream-500"
+          onClick={onRestartFromScratch}
+        >
+          처음부터
+        </motion.button>
+      </div>
     </>
   )
 }
 
-export function FinalResultPanel({ message, onRestart, layout = "modal" }: FinalResultPanelProps) {
+export function FinalResultPanel({
+  message,
+  onRestartFromScratch,
+  onRestartWithSameQuestion,
+  canReplayWithSameQuestion,
+  layout = "modal",
+}: FinalResultPanelProps) {
   const headingId = layout === "inline" ? "final-result-heading-inline" : "final-result-heading"
 
   if (layout === "inline") {
@@ -54,7 +95,13 @@ export function FinalResultPanel({ message, onRestart, layout = "modal" }: Final
         className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-white via-dream-50 to-dream-100 p-8 text-center shadow-float"
         data-framer-name="Result card"
       >
-        <ResultCardBody message={message} onRestart={onRestart} headingId={headingId} />
+        <ResultCardBody
+          message={message}
+          onRestartFromScratch={onRestartFromScratch}
+          onRestartWithSameQuestion={onRestartWithSameQuestion}
+          canReplayWithSameQuestion={canReplayWithSameQuestion}
+          headingId={headingId}
+        />
       </div>
     )
   }
@@ -74,10 +121,16 @@ export function FinalResultPanel({ message, onRestart, layout = "modal" }: Final
         initial={{ opacity: 0, scale: 0.94, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 320, damping: 28, delay: 0.08 }}
-        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-white via-dream-50 to-dream-100 p-8 text-center shadow-float"
+        className="relative max-h-[min(90dvh,calc(100dvh-var(--keyboard-inset,0px)-2rem))] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-white via-dream-50 to-dream-100 p-8 text-center shadow-float"
         data-framer-name="Result dialog"
       >
-        <ResultCardBody message={message} onRestart={onRestart} headingId={headingId} />
+        <ResultCardBody
+          message={message}
+          onRestartFromScratch={onRestartFromScratch}
+          onRestartWithSameQuestion={onRestartWithSameQuestion}
+          canReplayWithSameQuestion={canReplayWithSameQuestion}
+          headingId={headingId}
+        />
       </motion.div>
     </motion.div>
   )

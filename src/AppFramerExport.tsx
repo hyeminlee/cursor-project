@@ -64,7 +64,9 @@ export function AppFramerExport() {
         >
           <FinalResultPanel
             message={SAMPLE_RESULT}
-            onRestart={() => {}}
+            onRestartFromScratch={() => {}}
+            onRestartWithSameQuestion={() => {}}
+            canReplayWithSameQuestion
             layout="inline"
           />
         </section>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AppFramerExport } from "./AppFramerExport"
 import { FinalResultPanel } from "./components/FinalResultPanel"
 import { FlowerStage } from "./components/FlowerStage"
@@ -12,7 +12,7 @@ type Phase = "intro" | "playing" | "result"
 function buildMessage(concern: string, index: number): string {
   const q = concern.trim()
   const suffix = index % 2 === 0 ? "맞다" : "아니다"
-  return `${q} ${suffix}`
+  return q ? `${q} ${suffix}` : suffix
 }
 
 function AppMain() {
@@ -31,7 +31,7 @@ function AppMain() {
     [flowerId],
   )
 
-  const canStart = concern.trim().length > 0 && flowerId !== null
+  const canStart = flowerId !== null
 
   const reset = useCallback(() => {
     if (resultTimerRef.current) {
@@ -45,6 +45,41 @@ function AppMain() {
     remainingRef.current = 0
     setToastText(null)
     setFinalMessage("")
+  }, [])
+
+  const restartWithSameConcern = useCallback(() => {
+    if (resultTimerRef.current) {
+      clearTimeout(resultTimerRef.current)
+      resultTimerRef.current = null
+    }
+    setPhase("intro")
+    setFlowerId(null)
+    setRemainingPetals(0)
+    remainingRef.current = 0
+    setToastText(null)
+    setFinalMessage("")
+  }, [])
+
+  useEffect(() => {
+    const root = document.documentElement
+    const vv = window.visualViewport
+    const syncKeyboardInset = () => {
+      if (!vv) {
+        root.style.setProperty("--keyboard-inset", "0px")
+        return
+      }
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      root.style.setProperty("--keyboard-inset", `${inset}px`)
+    }
+    syncKeyboardInset()
+    if (!vv) return () => root.style.removeProperty("--keyboard-inset")
+    vv.addEventListener("resize", syncKeyboardInset)
+    vv.addEventListener("scroll", syncKeyboardInset)
+    return () => {
+      vv.removeEventListener("resize", syncKeyboardInset)
+      vv.removeEventListener("scroll", syncKeyboardInset)
+      root.style.removeProperty("--keyboard-inset")
+    }
   }, [])
 
   const handleStart = () => {
@@ -120,7 +155,12 @@ function AppMain() {
             >
               <header className="mb-6 text-center">
                 <h2 className="text-xl font-semibold text-dream-900 md:text-2xl">꽃잎을 하나씩 떼어 보세요</h2>
-                <p className="mt-1 text-sm text-dream-600">꽃을 누를 때마다 속삭임이 바뀌어요</p>
+                {concern.trim() ? (
+                  <p className="mt-2 text-pretty text-sm font-medium text-dream-700">「{concern.trim()}」</p>
+                ) : null}
+                <p className={`text-sm text-dream-600 ${concern.trim() ? "mt-1" : "mt-2"}`}>
+                  꽃을 누를 때마다 속삭임이 바뀌어요
+                </p>
               </header>
               <div className="flex flex-1 flex-col items-center justify-center">
                 <FlowerStage
@@ -137,7 +177,12 @@ function AppMain() {
 
       {phase === "playing" ? <ToastMessage text={toastText} /> : null}
       {phase === "result" && finalMessage ? (
-        <FinalResultPanel message={finalMessage} onRestart={reset} />
+        <FinalResultPanel
+          message={finalMessage}
+          onRestartFromScratch={reset}
+          onRestartWithSameQuestion={restartWithSameConcern}
+          canReplayWithSameQuestion={concern.trim().length > 0}
+        />
       ) : null}
     </div>
   )
