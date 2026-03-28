@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@import url("https://cdn.jsdelivr.net/gh/webfontworld/PyeongChangPeace/PyeongChangPeace.css");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap");
+
+@theme {
+  --font-sans: "PyeongChangPeace", "Apple SD Gothic Neo", "Malgun Gothic", "Nanum Gothic",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-dream-50: #eff6ff;
+  --color-dream-100: #dbeafe;
+  --color-dream-200: #bfdbfe;
+  --color-dream-300: #93c5fd;
+  --color-dream-400: #60a5fa;
+  --color-dream-500: #3b82f6;
+  --color-dream-600: #2563eb;
+  --color-dream-700: #1d4ed8;
+  --color-dream-800: #1e40af;
+  --color-dream-900: #1e3a8a;
+
+  --shadow-soft: 0 4px 24px -4px rgb(59 130 246 / 16%), 0 2px 8px -2px rgb(30 64 175 / 10%);
+  --shadow-float: 0 12px 40px -12px rgb(37 99 235 / 22%), 0 4px 16px -4px rgb(30 58 138 / 12%);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-dvh antialiased text-dream-900 bg-dream-50;
+    font-family: var(--font-sans);
+  }
+}
